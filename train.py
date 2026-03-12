@@ -164,7 +164,7 @@ def main():
     parser.add_argument('--split_dir', type=str, default='./data_split')
     parser.add_argument('--output_dir', type=str, default='/root/autodl-tmp/lora_output')
     
-    # ⭐ 优化后的参数
+    #优化后的参数
     parser.add_argument('--num_epochs', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--learning_rate', type=float, default=5e-5)
@@ -174,11 +174,7 @@ def main():
     
     args = parser.parse_args()
     
-    print("=" * 60)
-    print("LUMI LoRA微调训练（优化版）")
-    print("=" * 60)
-    
-    # 加载数据划分
+    #加载数据划分
     split_dir = Path(args.split_dir)
     with open(split_dir / "train_ids.txt", 'r') as f:
         train_ids = [line.strip() for line in f if line.strip()]
@@ -188,14 +184,14 @@ def main():
     print(f"训练集: {len(train_ids)} 条")
     print(f"测试集: {len(test_ids)} 条")
     
-    # 加载tokenizer和特征提取器
+    #加载tokenizer和特征提取器
     tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
     feature_extractor = AutoFeatureExtractor.from_pretrained(
         args.model_path, subfolder="feature_extractor", trust_remote_code=True
     )
     model_config = AutoConfig.from_pretrained(args.model_path, trust_remote_code=True)
     
-    # 加载模型
+    #加载模型
     config_path = os.path.join(args.model_path, 'origin_config.json')
     config = LUMIQwen2Config.from_pretrained(config_path)
     model = LUMIQwen2ForCausalLM.from_pretrained(
@@ -205,7 +201,7 @@ def main():
         device_map="auto"
     )
     
-    # ⭐ 配置LoRA（优化参数）
+    #配置LoRA（优化参数）
     lora_config = LoraConfig(
         r=args.lora_r,
         lora_alpha=args.lora_alpha,
@@ -219,7 +215,7 @@ def main():
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
     
-    # 准备数据集
+    #准备数据集
     train_dataset = MultiModalDataset(
         args.data_dir, train_ids, tokenizer, 
         feature_extractor, model_config
@@ -229,7 +225,7 @@ def main():
         feature_extractor, model_config
     )
     
-    # ⭐ 训练参数（优化）
+    #训练参数（优化）
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         num_train_epochs=args.num_epochs,
@@ -255,7 +251,7 @@ def main():
         remove_unused_columns=False,
     )
     
-    # 创建Trainer
+    #创建Trainer
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -264,22 +260,16 @@ def main():
         data_collator=DataCollator(tokenizer),
     )
     
-    # 开始训练
-    print("\n" + "=" * 60)
+    #开始训练
     print("开始训练...")
-    print("=" * 60 + "\n")
-    
     trainer.train()
     
-    # 保存模型
+    #保存模型
     final_output_dir = os.path.join(args.output_dir, "final_weights")
     model.save_pretrained(final_output_dir)
     tokenizer.save_pretrained(final_output_dir)
-    
-    print("=" * 60)
-    print(f"✅ 训练完成! 权重已保存到: {final_output_dir}")
-    print("=" * 60)
-
+    print(f"训练完成,权重已保存到: {final_output_dir}")
 
 if __name__ == '__main__':
+
     main()
