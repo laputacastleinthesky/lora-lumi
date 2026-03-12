@@ -26,7 +26,7 @@ from lumi.util.mm_utils import tokenizer_image_audio_token
 class MultiModalDataset(Dataset):
     """多模态数据集"""
     
-    def __init__(self, data_dir: str, instruction_ids: List[str],
+    def __init__(self, data_dir: str, instruction_ids: List[str],  #初始化函数
                  tokenizer, feature_extractor, model_config, max_length: int = 512):
         self.data_dir = Path(data_dir)
         self.instruction_ids = instruction_ids
@@ -41,14 +41,13 @@ class MultiModalDataset(Dataset):
         
         print(f"加载数据集: {len(self.instruction_ids)} 条指令")
     
-    def __len__(self) -> int:
+    def __len__(self) -> int:  #dataset标准接口
         return len(self.instruction_ids)
     
-    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:  #按索引读取一条样本
         inst_id = self.instruction_ids[idx]
         
-        try:
-            # 加载文本
+        try: # 加载文本
             text_file = self.text_dir / f"{inst_id}.txt"
             with open(text_file, 'r', encoding='utf-8') as f:
                 text_inst = f.read().strip()
@@ -103,7 +102,7 @@ class MultiModalDataset(Dataset):
                 'labels': torch.tensor(labels, dtype=torch.long),
                 'audio_features': audio_features,
             }
-        except Exception as e:
+        except Exception as e:#异常情况
             print(f"错误: 处理 {inst_id} 时出错: {e}")
             return {
                 'input_ids': torch.zeros(10, dtype=torch.long),
@@ -114,12 +113,12 @@ class MultiModalDataset(Dataset):
 
 
 class DataCollator:
-    """数据整理器"""
+    #数据整理器
     
     def __init__(self, tokenizer):
         self.tokenizer = tokenizer
     
-    def __call__(self, features: List[Dict]) -> Dict[str, torch.Tensor]:
+    def __call__(self, features: List[Dict]) -> Dict[str, torch.Tensor]:#整理函数
         max_length = max(len(f['input_ids']) for f in features)
         
         batch = {
@@ -157,7 +156,7 @@ class DataCollator:
         }
 
 
-def main():
+def main():#训练主流程
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', type=str, required=True)
     parser.add_argument('--data_dir', type=str, default='/root/autodl-tmp/data')
@@ -248,7 +247,7 @@ def main():
         lr_scheduler_type="linear",
         report_to="none",
         dataloader_num_workers=4,
-        remove_unused_columns=False,
+        remove_unused_columns=False, #保护多模态字段
     )
     
     #创建Trainer
@@ -273,3 +272,4 @@ def main():
 if __name__ == '__main__':
 
     main()
+
