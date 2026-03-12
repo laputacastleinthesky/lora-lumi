@@ -11,14 +11,11 @@ from typing import List, Tuple
 
 
 class DataSplitter:
-    """数据划分器 - 支持完全随机划分"""
-    
     def __init__(self, data_dir: str):
         self.data_dir = Path(data_dir)
         self.text_dir = self.data_dir / "text"
         
     def get_all_instruction_ids(self) -> List[str]:
-        """获取所有指令ID"""
         instruction_ids = []
         if self.text_dir.exists():
             for txt_file in sorted(self.text_dir.glob("T*.txt")):
@@ -27,17 +24,7 @@ class DataSplitter:
     
     def split_data(self, train_ratio: float = 0.8, 
                    shuffle: bool = True, seed: int = 42) -> Tuple[List[str], List[str]]:
-        """
-        划分数据集 - 完全随机
-        
-        Args:
-            train_ratio: 训练集比例
-            shuffle: 是否随机打乱
-            seed: 随机种子
-            
-        Returns:
-            train_ids, test_ids
-        """
+                       
         random.seed(seed)
         
         all_ids = self.get_all_instruction_ids()
@@ -46,11 +33,10 @@ class DataSplitter:
         print(f"总数据量: {total_count}")
         print(f"训练集比例: {train_ratio*100:.0f}%")
         print(f"随机打乱: {'是' if shuffle else '否'}")
-        
-        # ⭐ 完全随机打乱
+
         if shuffle:
             random.shuffle(all_ids)
-            print("✓ 数据已随机打乱")
+            print("数据已随机打乱")
         
         # 计算划分点
         train_size = int(total_count * train_ratio)
@@ -111,9 +97,7 @@ def main():
     
     args = parser.parse_args()
     
-    print("=" * 60)
-    print("LUMI 数据集划分工具（优化版）")
-    print("=" * 60)
+    print("LUMI 数据集划分工具")
     
     splitter = DataSplitter(args.data_dir)
     train_ids, test_ids = splitter.split_data(
@@ -121,10 +105,9 @@ def main():
     )
     splitter.save_split(train_ids, test_ids, args.output_dir)
     
-    print("\n" + "=" * 60)
-    print("✅ 数据集划分完成!")
-    print("=" * 60)
+    print("数据集划分完成!")
 
 
 if __name__ == '__main__':
+
     main()
