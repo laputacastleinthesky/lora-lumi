@@ -30,10 +30,8 @@ plt.rcParams['axes.unicode_minus'] = False
 
 def load_lora_model(base_model_path: str, lora_weights_path: str):
     """加载LoRA模型"""
-    print("=" * 60)
     print("加载LoRA模型...")
-    print("=" * 60)
-    
+
     config_path = os.path.join(base_model_path, 'origin_config.json')
     config = LUMIQwen2Config.from_pretrained(config_path)
     
@@ -103,10 +101,6 @@ def inference(model, tokenizer, feature_extractor, model_config,
 
 
 def compare_json_ignore_task_id(pred_dict: dict, ref_dict: dict) -> tuple:
-    """
-    ⭐ 比较JSON，忽略task_id字段
-    返回: (exact_match, precision, recall, f1)
-    """
     # 移除task_id
     pred_copy = {k: v for k, v in pred_dict.items() if k != 'task_id'}
     ref_copy = {k: v for k, v in ref_dict.items() if k != 'task_id'}
@@ -151,9 +145,7 @@ def compare_json_ignore_task_id(pred_dict: dict, ref_dict: dict) -> tuple:
 def evaluate_on_test_set(model, tokenizer, feature_extractor, model_config,
                           data_dir: str, test_ids: List[str], output_dir: str):
     """在测试集上评估"""
-    print("\n" + "=" * 60)
     print("开始评估...")
-    print("=" * 60)
     
     data_dir = Path(data_dir)
     results = []
@@ -186,7 +178,7 @@ def evaluate_on_test_set(model, tokenizer, feature_extractor, model_config,
             else:
                 pred_json = {}
             
-            # ⭐ 比较JSON（忽略task_id）
+            # 比较JSON（忽略task_id）
             exact_match, precision, recall, f1 = compare_json_ignore_task_id(
                 pred_json, ref_json
             )
@@ -245,9 +237,7 @@ def evaluate_on_test_set(model, tokenizer, feature_extractor, model_config,
 
 
 def create_visualizations(results: List[Dict], overall: Dict, output_dir: Path):
-    """⭐ 创建独立的可视化图表"""
-    print("\n生成可视化图表...")
-    
+
     # 提取数据
     sample_indices = list(range(len(results)))
     accuracies = [r['exact_match'] * 100 for r in results]
@@ -255,7 +245,7 @@ def create_visualizations(results: List[Dict], overall: Dict, output_dir: Path):
     recalls = [r['recall'] * 100 for r in results]
     f1_scores = [r['f1'] * 100 for r in results]
     
-    # 1️⃣ 准确率折线图
+    #准确率折线图
     plt.figure(figsize=(10, 6))
     plt.plot(sample_indices, accuracies, 'b-', linewidth=2, alpha=0.7)
     plt.axhline(y=overall['accuracy'], color='r', linestyle='--', 
@@ -337,11 +327,7 @@ def create_visualizations(results: List[Dict], overall: Dict, output_dir: Path):
     except:
         pass
     
-    print(f"✓ 准确率图表: {output_dir / 'accuracy_chart.png'}")
-    print(f"✓ 精确率图表: {output_dir / 'precision_chart.png'}")
-    print(f"✓ F1分数图表: {output_dir / 'f1_chart.png'}")
-    print(f"✓ 综合对比图: {output_dir / 'overall_metrics.png'}")
-    print(f"✓ CSV表格: {csv_file}")
+    print(f"图表绘制完成")
 
 
 def main():
@@ -374,11 +360,10 @@ def main():
     
     # 可视化
     create_visualizations(results, overall, Path(args.output_dir))
-    
-    print("\n" + "=" * 60)
-    print("✅ 评估完成!")
-    print("=" * 60)
+
+    print("评估完成")
 
 
 if __name__ == '__main__':
+
     main()
